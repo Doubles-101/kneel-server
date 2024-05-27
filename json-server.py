@@ -5,6 +5,7 @@ from nss_handler import HandleRequests, status
 
 # Add your imports below this line
 from views import get_all_orders, get_single_order, create_order, delete_order
+from views import update_metal
 
 class JSONServer(HandleRequests):
     """Server class to handle incoming HTTP requests for kneel diamonds"""
@@ -51,9 +52,7 @@ class JSONServer(HandleRequests):
             return self.response("", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
     def do_PUT(self):
-        """Handle PUT requests from a client"""
 
-        # Parse the URL and get the primary key
         url = self.parse_url(self.path)
         pk = url["pk"]
 
@@ -62,27 +61,9 @@ class JSONServer(HandleRequests):
         request_body = self.rfile.read(content_len)
         request_body = json.loads(request_body)
 
-        if url["requested_resource"] == "ships":
+        if url["requested_resource"] == "metals":
             if pk != 0:
-                successfully_updated = update_ship(pk, request_body)
-                if successfully_updated:
-                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
-
-        elif url["requested_resource"] == "docks":
-            if pk != 0:
-                successfully_updated = update_dock(pk, request_body)
-                if successfully_updated:
-                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
-
-        if url["requested_resource"] == "haulers":
-            if pk != 0:
-                successfully_updated = update_hauler(pk, request_body)
-                if successfully_updated:
-                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
-                
-        if url["requested_resource"] == "orders":
-            if pk != 0:
-                successfully_updated = update_hauler(pk, request_body)
+                successfully_updated = update_metal(pk, request_body)
                 if successfully_updated:
                     return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
 
@@ -102,22 +83,6 @@ class JSONServer(HandleRequests):
 
                 return self.response("Requested resource not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
-        elif url["requested_resource"] == "haulers":
-            if pk != 0:
-                successfully_deleted = delete_hauler(pk)
-                if successfully_deleted:
-                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
-
-                return self.response("Requested resource not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
-
-        elif url["requested_resource"] == "docks":
-            if pk != 0:
-                successfully_deleted = delete_dock(pk)
-                if successfully_deleted:
-                    return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
-
-                return self.response("Requested resource not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
-
         else:
             return self.response("Not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
 
@@ -132,14 +97,7 @@ class JSONServer(HandleRequests):
         request_body = self.rfile.read(content_len)
         request_body = json.loads(request_body)
 
-        if url["requested_resource"] == "ships":
-            successfully_posted = add_ship(request_body["name"], request_body["hauler_id"])
-            if successfully_posted:
-                return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)            
-            else:
-                return self.response("Requested resource not found", status.HTTP_404_CLIENT_ERROR_RESOURCE_NOT_FOUND.value)
-        
-        elif url["requested_resource"] == "orders":
+        if url["requested_resource"] == "orders":
                 successfully_posted = create_order(request_body["metal_id"], request_body["size_id"], request_body["style_id"])
                 if successfully_posted:
                     return self.response("", status.HTTP_204_SUCCESS_NO_RESPONSE_BODY.value)
