@@ -52,6 +52,67 @@ def get_single_order(pk, url_dict):
             dictionary_version_of_object = dict(query_results)
             serialized_order = json.dumps(dictionary_version_of_object)
 
+            return serialized_order
+
+
+        elif url_dict["query_params"] != {}:
+
+            db_cursor.execute("""
+            SELECT
+                o.id,
+                o.metal_id,
+                o.size_id,
+                o.style_id,
+                m.metal,
+                m.price AS metal_Price,
+                size.carets,
+                size.price AS size_Price,
+                style.style,
+                style.price AS style_Price
+            FROM Orders o
+            JOIN Metals m ON m.id = o.metal_id
+            JOIN Sizes size ON size.id = o.size_id
+            JOIN Styles style ON style.id = o.style_id
+            WHERE o.id = ?
+            """, (pk,))
+            query_results = db_cursor.fetchall()
+
+            orders = []
+            for row in query_results:
+                # Create an order from the current row
+                order = {
+                    'metal_id': row['metal_id'], 
+                    'style_id': row['style_id'], 
+                    'size_id': row['size_id']
+                }
+
+                # Create a dictionary representation of the size from the current row
+                size =  {
+                    "carets": row["carets"],
+                    "price": row["size_Price"]
+                }
+                # Create a dictionary representation of the style from the current row
+                style = {
+                    "style": row["style"],
+                    "price": row["style_Price"]
+                }
+                # Create a dictionary representation of the metal from the current row
+                metal = {
+                    "metal": row["metal"],
+                    "price": row["metal_Price"]
+                }
+                # Add the dictionary representation of related object to the order instance
+                # Here what added the size would look like. You add the other two.
+                order['size'] = size
+                order['style'] = style
+                order['metal'] = metal
+
+                # Add the dictionary representation of the order to the list
+                orders.append(order)
+
+            serialized_order = json.dumps(orders)
+            
+
     return serialized_order
 
 
